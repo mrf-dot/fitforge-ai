@@ -3,50 +3,103 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FitForge AI — Your Personal Workout Coach</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>FitForge AI — Local Demo</title>
   <style>
     :root {
       --primary: #6C5CE7;
-      --primary-dark: #5A4BD1;
       --accent: #00D2D3;
       --bg: #0F0F1A;
       --card: #1A1A2E;
-      --card-hover: #222240;
       --text: #E8E8F0;
       --text-muted: #8888AA;
-      --success: #00B894;
       --border: #2D2D4A;
-      --radius: 12px;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-    .hero {
-      text-align: center;
-      padding: 60px 24px 40px;
-      background: linear-gradient(135deg, #6C5CE7 0%, #00D2D3 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .hero h1 { font-size: 3rem; font-weight: 700; letter-spacing: -1px; }
-    .hero p {
-      font-size: 1.15rem;
-      margin-top: 8px;
-      -webkit-text-fill-color: var(--text-muted);
-    }
-    .container { max-width: 720px; margin: 0 auto; padding: 0 24px 60px; }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 32px;
-      margin-top: 32px;
-    }
-    label { display: block; font-size: 0.85rem; color: var
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #0F0F1A; color: var(--text); }
+    .container { max-width: 800px; margin: 40px auto; padding: 0 16px; }
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    p { color: #cbd5e1; }
+    .card { background: #1A1A2E; border: 1px solid #2D2D4A; border-radius: 12px; padding: 20px; margin-top: 20px; }
+    label { display: block; font-size: 0.9rem; color: var(--text-muted); margin-top: 8px; }
+    select, input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: #0e1320; color: #fff; margin-top: 6px; }
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; background: linear-gradient(135deg, #6C5CE7, #00D2D3); color: white; font-weight: 600; cursor: pointer; margin-top: 12px; }
+    #results { display: none; margin-top: 20px; }
+    .section-label { font-size: 0.9rem; color: #87cefa; text-transform: uppercase; margin-top: 14px; }
+    .exercise { padding: 6px 0; border-bottom: 1px solid #2a2a2a; }
+    .footer { text-align: center; color: #777; font-size: 12px; margin: 32px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>FitForge AI Demo</h1>
+    <p>Local AI-powered workout planner. Generate personalized workouts from goals, level, and equipment.</p>
+
+    <div class="card">
+      <form id="workout-form">
+        <label for="goals">Goals</label>
+        <select id="goals">
+          <option value="general fitness">General Fitness</option>
+          <option value="weight loss">Weight Loss</option>
+          <option value="muscle gain">Muscle Gain</option>
+          <option value="endurance">Endurance</option>
+          <option value="flexibility">Flexibility</option>
+          <option value="strength">Strength</option>
+        </select>
+
+        <label for="level">Fitness Level</label>
+        <select id="level">
+          <option value="beginner">Beginner</option>
+          <option value="intermediate" selected>Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+
+        <label for="equipment">Available Equipment</label>
+        <input type="text" id="equipment" placeholder="e.g.,none, dumbbells" />
+
+        <button type="submit" class="btn">Generate My Workout</button>
+      </form>
+    </div>
+
+    <div id="results" class="card">
+      <h2 id="plan-name" style="margin:0 0 6px 0;"></h2>
+      <p id="plan-desc" style="color:#cbd5e1;margin-top:0"></p>
+      <div class="section-label">Warm-Up</div>
+      <div id="warmup" class="exercise"></div>
+      <div class="section-label">Exercises</div>
+      <div id="exercises-list"></div>
+      <div class="section-label">Cool-Down</div>
+      <div id="cooldown" class="exercise"></div>
+      <div class="section-label">Pro Tips</div>
+      <ul id="tips-list" style="list-style:none;padding:0;margin:0"></ul>
+    </div>
+  </div>
+
+  <div class="footer">Built with ❤️ by FitForge AI</div>
+
+  <script>
+    document.getElementById('workout-form').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const payload = {
+        goals: document.getElementById('goals').value,
+        level: document.getElementById('level').value,
+        equipment: document.getElementById('equipment').value
+      };
+      const resp = await fetch('/api/workout', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+      });
+      const data = await resp.json();
+      document.getElementById('plan-name').textContent = data.plan_name || 'Your Workout';
+      document.getElementById('plan-desc').textContent = data.description || '';
+      document.getElementById('warmup').textContent = data.warmup || '';
+      const exList = document.getElementById('exercises-list'); exList.innerHTML = '';
+      (data.exercises || []).forEach(ex => {
+        const div = document.createElement('div'); div.className = 'exercise'; div.textContent = ex.name + ' — ' + ex.sets + 'x' + ex.reps + (ex.rest ? ' ('+ex.rest+')' : ''); exList.appendChild(div);
+      });
+      document.getElementById('cooldown').textContent = data.cooldown || '';
+      const tips = data.tips || []; const tipsList = document.getElementById('tips-list'); tipsList.innerHTML = '';
+      tips.forEach(t => { const li = document.createElement('li'); li.textContent = t; tipsList.appendChild(li); });
+      document.getElementById('results').style.display = 'block';
+    });
+  </script>
+</body>
+</html>

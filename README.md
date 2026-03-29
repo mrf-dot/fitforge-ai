@@ -1,63 +1,105 @@
-FitForge AI – VC-Ready Personal Workout Generator
+# FitForge AI
 
-Executive Summary
-FitForge AI is a lean, AI-powered workout generator that creates personalized 4-week workout plans based on user goals, fitness level, and available equipment. It runs locally with a clean web interface and an open, extensible backend designed for rapid demos to investors.
+An AI-powered personal workout generator that creates customized training plans based on your goals, fitness level, and available equipment.
 
-The Problem
-- People struggle to design effective workouts that match their goals, time, and gear.
-- Personalization scales poorly with manual planning, especially for teams or corporate wellness programs.
+## Features
 
-The Solution
-- On-demand, customized workouts with warmups, cooldowns, and a typical session of 5–7 exercises.
-- Plans adapt to goals (weight loss, muscle gain, endurance), fitness level, and equipment availability.
-- Lightweight, fast, and private — runs entirely on your machine with an optional AI path for dynamic content.
+- **AI-Generated Workouts** — Uses large language models (via OpenRouter) to build complete, personalized workout plans with warmups, cooldowns, and coaching cues
+- **Smart Fallback** — Works offline or without an API key using a built-in exercise library
+- **Personalized Plans** — Adapts to six goal types (general fitness, weight loss, muscle gain, endurance, flexibility, strength), three fitness levels, and any equipment setup
+- **Structured Output** — Every plan includes warmup, 5-7 exercises with sets/reps/rest/form notes, cooldown, and pro tips
+- **Clean Web UI** — Dark-themed, responsive interface with a progress bar and smooth UX
+- **Health Check Endpoint** — `/health` returns server status and whether AI is configured
 
-What’s in it for Investors (VC pitch)
-- Clear value: faster, personalized workout planning at scale with privacy-first design.
-- Low-cost, fast-to-demo MVP: single local server on port 8080, minimal dependencies, easy to show in a live pitch.
-- Extension-ready: add user accounts, progress tracking, analytics, and Dockerized deployment for cloud demos.
+## Tech Stack
 
-Product Overview
-- Core: Local web UI for inputting goals, level, and equipment; server returns a complete workout plan including warmup, cooldown, and tips.
-- AI Layer (optional): OpenRouter-backed generation to produce JSON-based workouts; deterministic fallback ensures reliability if the API key is absent.
-- Extensibility: Docker deployment, CI, and plug-in architecture for mobile apps or integration with wellness platforms.
+- **Backend:** Python 3, Flask
+- **AI:** OpenRouter API (supports Claude, GPT, Gemini, etc.)
+- **Frontend:** Vanilla HTML/CSS/JS (no build step)
 
-How It Works
-1) User enters goals, fitness level, and equipment via a simple UI.
-2) The server generates a plan with warmup, 5–7 exercises (name, sets, reps, rest, notes), cooldown, and coaching tips.
-3) Optional AI path uses OpenRouter to tailor content on the fly; otherwise a deterministic fallback keeps the flow reliable.
-4) Result is returned as JSON and rendered in the UI for quick demonstration.
+## Quick Start
 
-Technical Highlights
-- Backend: Python 3.x, Flask
-- AI Layer: OpenRouter (requires OPENROUTER_API_KEY in .env; optional)
-- Frontend: HTML/CSS/JavaScript
-- Local deployment: Port 8080 (localhost)
+```bash
+# Clone the repo
+git clone https://github.com/mrf-dot/fitforge-ai.git
+cd fitforge-ai
 
-Getting Started (Local Dev)
-1) Install dependencies: pip install -r requirements.txt
-2) Copy example env and configure API key:
-   - cp .example_env .env
-   - Edit .env to set OPENROUTER_API_KEY="your-real-api-key"
-3) Run: python app.py
-4) Open: http://localhost:8080
+# Install dependencies
+pip install -r requirements.txt
 
-Roadmap (VC-Ready)
-- MVP: complete local demo with polished UI and robust prompts to generate workouts
-- Q2: Dockerize and add a minimal auth layer for pilots
-- Q3: Build analytics dashboard and onboarding flows for enterprise sales
+# Set up your API key
+cp .example_env .env
+# Edit .env and add your OpenRouter API key
 
-Market & Business Model
-- Target customers: individual fitness enthusiasts, personal trainers, corporate wellness programs
-- Value proposition: faster, personalized workout planning at scale with privacy-first design
-- Revenue: optional consumer subscription and/or B2B licensing for wellness platforms
+# Run
+python app.py
+```
 
-Team
-- Mitch — Product, Vision, and Execution
-- FitForge AI scaffolding is designed to be extended by a small AI/ML team for production-grade models and analytics.
+Open [http://localhost:8080](http://localhost:8080) in your browser.
 
-Ask
-- Seed funding to deliver a production-ready MVP, including a robust AI generator, onboarding UX, and cloud-ready deployment within 90 days.
+## API
 
-Notes
-- This README describes the product features and go-to-market plan without referencing any internal OpenClaw or UltraON branding. It’s designed to be investor-friendly and production-ready for demos.
+### `POST /api/workout`
+
+Generate a workout plan.
+
+**Request:**
+```json
+{
+  "goals": "muscle gain",
+  "level": "intermediate",
+  "equipment": "dumbbells, pull-up bar"
+}
+```
+
+**Response:**
+```json
+{
+  "plan_name": "Muscle Gain Plan",
+  "description": "An intermediate-level workout targeting muscle gain.",
+  "duration": "45-55 minutes",
+  "warmup": "5 min light cardio + dynamic stretches",
+  "exercises": [
+    {
+      "name": "Dumbbell Rows",
+      "muscle_group": "Back",
+      "sets": 3,
+      "reps": "10-12",
+      "rest": "60s",
+      "notes": "Squeeze shoulder blade at top"
+    }
+  ],
+  "cooldown": "5 min walking + static stretches",
+  "tips": ["Stay hydrated", "Focus on form over speed"]
+}
+```
+
+### `GET /health`
+
+Returns server status and AI configuration.
+
+## Configuration
+
+| Variable | Description | Required |
+|---|---|---|
+| `OPENROUTER_API_KEY` | Your OpenRouter API key | No (falls back to built-in library) |
+| `PORT` | Server port (default: 8080) | No |
+| `FLASK_DEBUG` | Set to `1` for debug mode | No |
+
+## Project Structure
+
+```
+fitforge-ai/
+├── app.py              # Flask app + AI workout engine
+├── templates/
+│   └── index.html      # Web UI
+├── static/             # Static assets
+├── requirements.txt    # Python dependencies
+├── .example_env        # Example environment config
+├── .gitignore
+└── README.md
+```
+
+## License
+
+MIT
